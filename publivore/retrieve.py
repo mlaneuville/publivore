@@ -3,28 +3,16 @@ TODO
 '''
 
 import configparser
-from sqlite3 import dbapi2 as sqlite3
 import sys
 import urllib
 
 import feedparser
 from rdflib import Graph, Namespace, URIRef
+from tools import *
 
 if sys.version_info < (3, 5, 0):
     sys.stderr.write("You need python 3.5 or later to run this script\n")
     sys.exit(-1)
-
-def connect_db():
-    '''TODO'''
-    sqlite_db = sqlite3.connect("as.db")
-    sqlite_db.row_factory = sqlite3.Row
-    return sqlite_db
-
-def query_db(_db, _query, args=(), one=False):
-    '''TODO'''
-    cur = _db.execute(_query, args)
-    res = cur.fetchall()
-    return (res[0] if res else None) if one else res
 
 DATABASE = connect_db()
 

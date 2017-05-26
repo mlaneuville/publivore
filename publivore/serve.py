@@ -2,25 +2,19 @@ import sqlite3
 
 from datetime import date
 from sklearn.feature_extraction.text import TfidfVectorizer
+import random
 import numpy as np
 from sklearn import svm
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
+from tools import *
 app = Flask(__name__)
 
-def connect_db():
-    '''TODO'''
-    sqlite_db = sqlite3.connect("as.db")
-    sqlite_db.row_factory = sqlite3.Row
-    return sqlite_db
-
-def query_db(_db, _query, _args=(), one=False):
-    '''TODO'''
-    cur = _db.execute(_query, _args)
-    res = cur.fetchall()
-    return (res[0] if res else None) if one else res
-
 DATABASE = connect_db()
+
+@app.route("/")
+def main():
+    return redirect(url_for('show_all'))
 
 @app.route("/analysis")
 def analysis():
@@ -62,38 +56,23 @@ def analysis():
     s = clf.decision_function(X)
     
     sortix = np.argsort(-s)
-    sortix = sortix[int(sum(y)):int(sum(y))+5]
+    randidx = random.sample(range(int(sum(y)), int(sum(y))+50), 5)
+    sortix = sortix[randidx]
 
     data = []
     for idx in sortix:
         article = query_db(DATABASE, "select * from world where paper_id=%d"% (idx+1), one=False)[0]
-        data.append(tuple(article))
-    return render_template("analysis.html", data=data)
+        data.append(format_entry(article))
 
-@app.route("/")
-def main():
-    return redirect(url_for('show_all'))
+    return render_template("analysis.html", data=data)
 
 @app.route("/search", methods=['GET'])
 def search():
-    keyword = request.args.get('q', '')
+    keywords = request.args.get('q', '')
+    keywords = keywords.split(',')
 
-    world = query_db(DATABASE, "select * from world", one=False)
-    arr = []
-    for item in world:
-        filtered = True
-        if keyword in item[1]:
-            filtered = False
-        if not filtered:
-            arr.append(item)
-    return render_template("show_entries.html", entries=arr)
-
-@app.route("/show_liked")
-def show_liked():
-    world = query_db(DATABASE, "select * from world", one=False)
-    likes = query_db(DATABASE, "select * from library", one=False)
-    arr_likes = [world[x[0]-1] for x in likes]
-    return render_template("show_entries.html", entries=arr_likes)
+    world = search_query(DATABASE, 'world', keywords=keywords)
+    return render_template("show_entries.html", entries=world)
 
 @app.route("/add_likes")
 def add_likes():
@@ -108,32 +87,17 @@ def add_likes():
     DATABASE.commit()
     return redirect(url_for('show_all'))
 
-@app.route("/show_all", methods=['POST', 'GET'])
+@app.route("/show_liked")
+def show_liked():
+    world = search_query(DATABASE, 'world')
+    likes = search_query(DATABASE, 'library')
+    arr_likes = [world[x[0]-1] for x in likes]
+    return render_template("show_entries.html", entries=arr_likes)
+
+@app.route("/show_all")
 def show_all():
-    keyword = []
-    if request.method == 'POST':
-        keyword = request.form['keyword']
-
-    world = query_db(DATABASE, "select * from world", one=False)
-    arr = []
-    for item in world:
-        like = query_db(DATABASE, "select * from library where paper_id=%d"%item[0], one=True)
-        if like:
-            continue
-        if keyword:
-            filtered = True
-            if keyword in item[1]:
-                filtered = False
-            if not filtered:
-                arr.append(item)
-        else:
-            arr.append(item)
-    return render_template("show_entries.html", entries=arr)
+    world = search_query(DATABASE, 'world')
+    return render_template("show_entries.html", entries=world)
     
-@app.route("/")
-def hello():
-    render_template("layout.html")
-    return render_template("menu.html")
-
 if __name__ == "__main__":
     app.run()
