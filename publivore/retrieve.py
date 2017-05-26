@@ -45,7 +45,7 @@ def fetch_wiley():
                 DATABASE.commit()
                 counter += 1
     
-        print("Entries from %s added: %d" % (abbr, counter))
+        yield (abbr, counter)
 
 def fetch_rss():
     JOURNALS = CONFIG.items("journals-rss")
@@ -110,9 +110,4 @@ def fetch_arxiv():
                     DATABASE.commit()
                     counter += 1
     
-        print("Entries from %s added: %d" % (abbr, counter))
-
-    if sys.version_info < (3, 5, 0):
-        sys.stderr.write("You need python 3.5 or later to run this script\n")
-        sys.exit(-1)
-    
+        yield (abbr, counter)

@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import random
 from datetime import date
 import numpy as np
+from sklearn.cluster import KMeans
 from sklearn import svm
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
@@ -21,14 +22,18 @@ def main():
 def update():
     today = search_query(DATABASE, 'world', timestamp=date.today().isoformat())
 
-    if len(today) > 200:
+    if len(today) > 0:
         flash("Already updated today!")
     else:
+        for a,b in fetch_rss():
+            print(a,b)
+        for a,b in fetch_arxiv():
+            print(a,b)
+        for a,b in fetch_wiley():
+            print(a,b)
         flash("Update in progress!")
-        return render_template("update.html", response=fetch_rss())
+
     return render_template('update.html')
-    
-    
 
 @app.route("/analysis")
 def analysis():
@@ -50,6 +55,20 @@ def analysis():
     
     v.fit(corpus)
     X = v.transform(corpus)
+    data = {}
+    data['clusters'] = []
+
+    #clustering
+    model = KMeans(n_clusters=2, init='k-means++', max_iter=100, n_init=1)
+    model.fit(X[likes])
+
+    order_centroids = model.cluster_centers_.argsort()[:, ::-1]
+    terms = v.get_feature_names()
+    for i in range(2):
+        data['clusters'].append([])
+        for ind in order_centroids[i, :2]:
+            data['clusters'][-1].append(terms[ind])
+
     out = {}
     out['X'] = X
     out['y'] = likes
@@ -73,10 +92,10 @@ def analysis():
     randidx = random.sample(range(int(sum(y)), int(sum(y))+50), 5)
     sortix = sortix[randidx]
 
-    data = []
+    data['recomm'] = []
     for idx in sortix:
         article = query_db(DATABASE, "select * from world where paper_id=%d"% (idx+1), one=False)[0]
-        data.append(format_entry(article))
+        data['recomm'].append(format_entry(article))
 
     return render_template("analysis.html", data=data)
 
