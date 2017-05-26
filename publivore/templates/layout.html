@@ -1,22 +1,44 @@
 <!doctype html>
-<title>Publivor</title>
-<h1>Publivore</h1>
+<html>
 
-<ul>
-<li>
-<form action="{{ url_for('show_all') }}" method=post>
-Filter:
-<input type=text name=keyword>
-</form>
-</li>
+<head>
 
-<li>
-<form action="{{ url_for('add_likes') }}" method=post>
-Add indices:
-<input type=text name=likes>
-</form>
-</li>
-</ul>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Publivore</title>
 
-<hr>
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div id ="titdiv">
+  <!-- Site information/banner on top left -->
+    <a href="/">
+    <div id="tittxt">
+        <h1>Publivore</h1>
+        Heavily inspired by arxiv-sanity-preserver by @karpathy.
+    </div>
+    </a>
+</div>
+
+<div id="sbox">
+  <form action="/search" method="get">
+    <input name="q" type="text" id="qfield">
+  </form>
+  <div id="search_hint"></div>
+</div>
+
+<div id="pagebar">
+  <div class="pagelink" id="tablib"><a href="/show_all">show all</a></div>
+  <div class="pagelink" id="tablib"><a href="/show_liked">show liked</a></div>
+  <div class="pagelink" id="tabrec"><a href="/analysis">recommended</a></div>
+</div>
+
+<div id="maindiv">
 {% block main %}{% endblock %}
+</div>
+
+</body>
+</html>

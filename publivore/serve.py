@@ -70,6 +70,24 @@ def analysis():
         data.append(tuple(article))
     return render_template("analysis.html", data=data)
 
+@app.route("/")
+def main():
+    return redirect(url_for('show_all'))
+
+@app.route("/search", methods=['GET'])
+def search():
+    keyword = request.args.get('q', '')
+
+    world = query_db(DATABASE, "select * from world", one=False)
+    arr = []
+    for item in world:
+        filtered = True
+        if keyword in item[1]:
+            filtered = False
+        if not filtered:
+            arr.append(item)
+    return render_template("show_entries.html", entries=arr)
+
 @app.route("/show_liked")
 def show_liked():
     world = query_db(DATABASE, "select * from world", one=False)
