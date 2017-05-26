@@ -1,3 +1,7 @@
+'''
+TODO
+'''
+
 from sqlite3 import dbapi2 as sqlite3
 
 def connect_db():
@@ -13,21 +17,23 @@ def query_db(_db, _query, args=(), one=False):
     return (res[0] if res else None) if one else res
 
 def format_entry(entry):
+    '''TODO'''
     res = []
     for col in entry:
-        if isinstance(col, str) and len(col) > 120:
-            col = col[:119] + '...'
+        if isinstance(col, str) and len(col) > 100:
+            col = col[:99] + '...'
         res.append(col)
     return tuple(res)
 
 def search_query(db, table, keywords=None, journal=None, timestamp=None):
+    '''TODO'''
     if keywords:
         for kw in keywords:
             kwsplit = kw.split(':')
             if kwsplit[0] == 'date':
                 timestamp = kwsplit[1]
                 keywords.remove(kw)
- 
+
     query = "SELECT * FROM "+ table
     if journal:
         query += " WHERE journal='%s'" % journal
@@ -37,6 +43,7 @@ def search_query(db, table, keywords=None, journal=None, timestamp=None):
         else:
             query += " WHERE"
         query += " timestamp>='%s'" % timestamp
+
     ret = query_db(db, query)
 
     pop, out = [], []
