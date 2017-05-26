@@ -1,13 +1,14 @@
-import sqlite3
-
+import sqlite3 
 from datetime import date
 from sklearn.feature_extraction.text import TfidfVectorizer
 import random
+from datetime import date
 import numpy as np
 from sklearn import svm
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 from tools import *
+from retrieve import *
 app = Flask(__name__)
 
 DATABASE = connect_db()
@@ -15,6 +16,19 @@ DATABASE = connect_db()
 @app.route("/")
 def main():
     return redirect(url_for('show_all'))
+
+@app.route("/update")
+def update():
+    today = search_query(DATABASE, 'world', timestamp=date.today().isoformat())
+
+    if len(today) > 200:
+        flash("Already updated today!")
+    else:
+        flash("Update in progress!")
+        return render_template("update.html", response=fetch_rss())
+    return render_template('update.html')
+    
+    
 
 @app.route("/analysis")
 def analysis():
@@ -100,4 +114,5 @@ def show_all():
     return render_template("show_entries.html", entries=world)
     
 if __name__ == "__main__":
+    app.secret_key = 'super secret key'
     app.run()

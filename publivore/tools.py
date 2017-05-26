@@ -36,7 +36,7 @@ def search_query(db, table, keywords=None, journal=None, timestamp=None):
             query += " AND"
         else:
             query += " WHERE"
-        query += " timestamp>'%s'" % timestamp
+        query += " timestamp>='%s'" % timestamp
     ret = query_db(db, query)
 
     pop, out = [], []
