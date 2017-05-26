@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block main %}
+<h1>Entries</h1>
+
+{% for entry in entries %}
+<li><a href="{{ url_for('.add_likes', idx=entry[0])  }}">Swap</a> [{{entry[0]}}] {{entry[1]}}</li>
+{% endfor %}
+
+{% endblock %}

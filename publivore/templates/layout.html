@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Publivor</title>
+<h1>Publivore</h1>
+
+<ul>
+<li>
+<form action="{{ url_for('show_all') }}" method=post>
+Filter:
+<input type=text name=keyword>
+</form>
+</li>
+
+<li>
+<form action="{{ url_for('add_likes') }}" method=post>
+Add indices:
+<input type=text name=likes>
+</form>
+</li>
+</ul>
+
+<hr>
+{% block main %}{% endblock %}
