@@ -134,15 +134,15 @@ def show_liked():
     world = search_query(DATABASE, 'world')
     likes = search_query(DATABASE, 'library')
     arr_likes = [world[x[0]-1] for x in likes]
-    return render_template("show_entries.html",
-                           entries=sorted(arr_likes, key=lambda k: k[5]))
+    arr_likes = sorted(arr_likes, key=lambda k: k[5], reverse=True)
+    return render_template("show_entries.html", entries=arr_likes)
 
 @APP.route("/show_all")
 def show_all():
     '''TODO'''
     world = search_query(DATABASE, 'world')
-    return render_template("show_entries.html",
-                           entries=sorted(world, key=lambda k: k[5]), reverse=False)
+    world = sorted(world, key=lambda k:k[0], reverse=True)
+    return render_template("show_entries.html", entries=world)
 
 if __name__ == "__main__":
     APP.secret_key = 'super secret key'
