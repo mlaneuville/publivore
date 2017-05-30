@@ -54,9 +54,12 @@ def analysis():
     for item in size:
         corpus.append(item[1])
 
+    nclusters = session["nclusters"]
+    recomms = session["ncomms"]
+
     size = search_query(DATABASE, "library", user=session['user_id'])
-    if len(size) < 5:
-        flash("Please like at least 5 papers before trying the analysis.")
+    if len(size) < nclusters:
+        flash("Please like at least %d papers before trying the analysis." % recomms)
         return render_template("analysis.html")
         
     likes = []
@@ -75,12 +78,12 @@ def analysis():
     data['clusters'] = []
 
     #clustering
-    model = KMeans(n_clusters=2, init='k-means++', max_iter=100, n_init=1)
+    model = KMeans(n_clusters=nclusters, init='k-means++', max_iter=100, n_init=1)
     model.fit(X[likes])
 
     order_centroids = model.cluster_centers_.argsort()[:, ::-1]
     terms = v.get_feature_names()
-    for i in range(2):
+    for i in range(nclusters):
         data['clusters'].append([])
         for ind in order_centroids[i, :3]:
             data['clusters'][-1].append(terms[ind])
@@ -105,12 +108,12 @@ def analysis():
     s = clf.decision_function(X)
 
     sortix = np.argsort(-s)
-    randidx = random.sample(range(int(sum(y)), int(sum(y))+50), 5)
+    randidx = random.sample(range(int(sum(y)), int(sum(y))+50), recomms)
     sortix = sortix[randidx]
 
     data['recomm'] = []
     for idx in sortix:
-        article = query_db(DATABASE, "select * from world where paper_id=%d"% (idx+1), one=False)[0]
+        article = query_db(DATABASE, "select * from world where paper_id=%d"% (idx+1))[0]
         data['recomm'].append(format_entry(article))
 
     return render_template("analysis.html", data=data)
@@ -160,6 +163,23 @@ def show_liked():
             dates.append(row[5])
     return render_template("show_entries.html", entries={'data':arr_likes, 'dates':dates})
 
+@APP.route("/settings")
+def settings():
+    '''TODO'''
+    if 'user_id' not in session.keys():
+        flash("Please log in to see settings.")
+        return redirect(url_for('show_all'))
+
+    read_settings(session["user_id"])
+    settings = []
+    for setting in session.keys():
+        if setting in ["user_id", "username", "pw_hash", "creation_time"]:
+            continue
+        settings.append([setting, session[setting]])
+
+    return render_template("settings.html", entries=settings)
+    
+
 @APP.route("/show_all")
 def show_all():
     '''TODO'''
@@ -173,9 +193,24 @@ def show_all():
 
 def get_user_id(username):
   """Convenience method to look up the id for a username."""
-  rv = query_db(DATABASE, 'select user_id from users where username = ?',
-                [username], one=True)
+  rv = query_db(DATABASE, 'select user_id from users where username = ?', [username], one=True)
   return rv[0] if rv else None
+
+def read_settings(userid):
+    '''TODO'''
+    out = search_query(DATABASE, "users", user=userid)
+    session['ncomms'] = out[0][4]
+    session['nclusters'] = out[0][5]
+    return
+
+@APP.route("/update_settings", methods=['POST'])
+def update_settings():
+    flash("Ok. %s = %s" % (request.form['vname'], request.form['vval']))
+    query = "UPDATE users SET '%s'=%d WHERE user_id=%d" % (request.form['vname'], 
+            int(request.form['vval']), int(session['user_id']))
+    DATABASE.execute(query)
+    read_settings(session['user_id'])
+    return redirect(url_for('show_all'))
 
 @APP.route("/login", methods=['POST'])
 def login():
@@ -189,6 +224,7 @@ def login():
             # password is correct, log in the user
             session['user_id'] = get_user_id(request.form['username'])
             session['username'] = request.form['username']
+            read_settings(session['user_id'])
             flash('User ' + request.form['username'] + ' logged in.')
         else:
             # incorrect password
@@ -206,6 +242,7 @@ def login():
 
         session['user_id'] = user_id
         session['username'] = request.form['username']
+        read_settings(session['user_id'])
         flash('New account %s created' % (request.form['username'], ))
   
     return redirect(url_for('show_all'))

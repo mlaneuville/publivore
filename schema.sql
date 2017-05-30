@@ -3,6 +3,8 @@ create table users (
   user_id integer primary key autoincrement,
   username text not null,
   pw_hash text not null,
+  ncomms integer not null default 5,
+  nclusters integer not null default 2,
   creation_time integer
 );
 drop table if exists library;
@@ -18,5 +20,5 @@ create table world (
   journal text not null,
   volume integer not null,
   issue integer not null,
-  timestamp DATE DEFAULT (date('now'))
+  timestamp date default (date('now'))
 );
