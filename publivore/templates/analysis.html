@@ -3,6 +3,7 @@
 <h1>Analysis</h1>
 <br/>
 
+{% if data %}
 Top word in your clusters:
 {% for cluster in data.clusters %}
   <li>
@@ -17,5 +18,7 @@ Top word in your clusters:
 {% for entry in data.recomm %}
 <li><a href="{{ url_for('.add_likes', idx=entry[0])  }}">Swap</a> [{{entry[0]}}] {{entry[1]}}</li>
 {% endfor %}
+
+{% endif %}
 
 {% endblock %}

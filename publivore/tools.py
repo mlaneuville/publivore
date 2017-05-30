@@ -25,7 +25,7 @@ def format_entry(entry):
         res.append(col)
     return tuple(res)
 
-def search_query(db, table, keywords=None, journal=None, timestamp=None):
+def search_query(db, table, keywords=None, journal=None, timestamp=None, user=None):
     '''TODO'''
     if keywords:
         for kw in keywords:
@@ -35,6 +35,8 @@ def search_query(db, table, keywords=None, journal=None, timestamp=None):
                 keywords.remove(kw)
 
     query = "SELECT * FROM "+ table
+    if user:
+        query += " WHERE user_id='%s'" % user
     if journal:
         query += " WHERE journal='%s'" % journal
     if timestamp:

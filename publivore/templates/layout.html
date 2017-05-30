@@ -23,6 +23,43 @@
     </a>
 </div>
 
+  <!-- User account information on top right -->
+  <div id="userinfo">
+    {% if not session.username %}
+    <form action="{{ url_for('login') }}" method="post">
+    <table>
+    <tr>
+        <td>User:</td>
+        <td><input type="text" name="username" class="input-no-border"></td>
+    </tr>
+    <tr>
+        <td>Pass:</td>
+        <td><input type="password" name="password" class="input-no-border"></td>
+    </tr>
+    <tr>
+        <td></td> 
+        <td align='center'><input type="submit" value="Login or Create" class="btn-fancy"></td>
+    </tr>
+    </table>
+    </form>
+    {% else %}
+    <table>
+    <tr>
+        <td></td>
+        <td align='center'>{{ session.username }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align='center'><a href="{{ url_for('logout') }}">log out</a></td>
+    </tr>
+    <tr>
+        <td></td> 
+        <td></td>
+    </tr>
+    </table>
+    {% endif %}
+  </div>
+
 <div id="sbox">
   <form action="/search" method="get">
     <input name="q" type="text" id="qfield">
@@ -35,6 +72,18 @@
   <div class="pagelink" id="tablib"><a href="/show_liked">show liked</a></div>
   <div class="pagelink" id="tabrec"><a href="/analysis">recommended</a></div>
   <div class="pagelink" id="tabrec"><a href="/update">update db</a></div>
+</div>
+
+<div id="flashesdiv">
+{% with flashes = get_flashed_messages() %}
+    {% if flashes %}
+      <ul class="flashes">
+      {% for message in flashes %}
+        <li>{{ message }}
+      {% endfor %}
+      </ul>
+    {% endif %}
+{% endwith %}
 </div>
 
 <div id="maindiv">

@@ -1,3 +1,10 @@
+drop table if exists users;
+create table users (
+  user_id integer primary key autoincrement,
+  username text not null,
+  pw_hash text not null,
+  creation_time integer
+);
 drop table if exists library;
 create table library (
   paper_id integer not null,

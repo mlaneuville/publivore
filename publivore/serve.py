@@ -4,13 +4,15 @@ TODO
 
 from datetime import date
 import random
+import time
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn import svm
 from flask import Flask, request, redirect, url_for, \
-     render_template, flash
+     render_template, flash, session, g
+from werkzeug import check_password_hash, generate_password_hash
 
 from tools import *
 from retrieve import *
@@ -43,12 +45,20 @@ def update():
 
 @APP.route("/analysis")
 def analysis():
+    if 'user_id' not in session.keys():
+        flash("Please log in to see analysis.")
+        return render_template("analysis.html")
+        
     size = query_db(DATABASE, "select * from world order by paper_id", one=False)
     corpus = []
     for item in size:
         corpus.append(item[1])
 
-    size = query_db(DATABASE, "select * from library", one=False)
+    size = search_query(DATABASE, "library", user=session['user_id'])
+    if len(size) < 5:
+        flash("Please like at least 5 papers before trying the analysis.")
+        return render_template("analysis.html")
+        
     likes = []
     for item in size:
         likes.append(item[0]-1)
@@ -117,6 +127,10 @@ def search():
 @APP.route("/add_likes")
 def add_likes():
     '''TODO'''
+    if 'user_id' not in session.keys():
+        flash("Please log in to see analysis.")
+        return redirect(url_for('show_all'))
+
     idx = request.args.get('idx', type=int)
     like = query_db(DATABASE, "select * from library where paper_id=%d"%idx, one=True)
     if like:
@@ -124,7 +138,7 @@ def add_likes():
         DATABASE.execute(q, (idx,))
     else:
         q = '''INSERT INTO library VALUES (?,?,?)'''
-        DATABASE.execute(q, (idx, 0, date.today().isoformat()))
+        DATABASE.execute(q, (idx, session['user_id'], date.today().isoformat()))
     DATABASE.commit()
     return redirect(url_for('show_all'))
 
@@ -132,7 +146,12 @@ def add_likes():
 def show_liked():
     '''TODO'''
     world = search_query(DATABASE, 'world')
-    likes = search_query(DATABASE, 'library')
+    userid = "-1"
+    if 'user_id' in session.keys():
+        userid = session['user_id'] 
+    else:
+        flash("Please log in to store likes.")
+    likes = search_query(DATABASE, 'library', user=userid)
     arr_likes = [world[x[0]-1] for x in likes]
     arr_likes = sorted(arr_likes, key=lambda k: k[5], reverse=True)
     return render_template("show_entries.html", entries=arr_likes)
@@ -143,6 +162,52 @@ def show_all():
     world = search_query(DATABASE, 'world')
     world = sorted(world, key=lambda k:k[0], reverse=True)
     return render_template("show_entries.html", entries=world)
+
+def get_user_id(username):
+  """Convenience method to look up the id for a username."""
+  rv = query_db(DATABASE, 'select user_id from users where username = ?',
+                [username], one=True)
+  return rv[0] if rv else None
+
+@APP.route("/login", methods=['POST'])
+def login():
+    if not request.form['username']:
+        flash("You have to enter a username")
+    elif not request.form['password']:
+        flash("You have to enter your password")
+    elif get_user_id(request.form['username']) is not None:
+        user = query_db(DATABASE,'''select * from users where username = ?''', [request.form['username']], one=True)
+        if check_password_hash(user['pw_hash'], request.form['password']):
+            # password is correct, log in the user
+            session['user_id'] = get_user_id(request.form['username'])
+            session['username'] = request.form['username']
+            flash('User ' + request.form['username'] + ' logged in.')
+        else:
+            # incorrect password
+            flash('User ' + request.form['username'] + ' already exists, wrong password.')
+    else:
+        # create account and log in
+        creation_time = int(time.time())
+        print(type(request.form['username']), type(generate_password_hash(request.form['password'])), creation_time)
+        DATABASE.execute("insert into users (username, pw_hash, creation_time) values (?,?,?)",
+                     (request.form['username'], 
+                      generate_password_hash(request.form['password']), 
+                      creation_time))
+        user_id = DATABASE.execute('select last_insert_rowid()').fetchall()[0][0]
+        DATABASE.commit()
+
+        session['user_id'] = user_id
+        session['username'] = request.form['username']
+        flash('New account %s created' % (request.form['username'], ))
+  
+    return redirect(url_for('show_all'))
+
+@APP.route('/logout')
+def logout():
+  session.pop('user_id', None)
+  session.pop('username', None)
+  flash('You were logged out')
+  return redirect(url_for('show_all'))
 
 if __name__ == "__main__":
     APP.secret_key = 'super secret key'

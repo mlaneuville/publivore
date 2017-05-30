@@ -72,7 +72,7 @@ h1 {
 	padding-top: 20px;
 	padding-left: 20px;
 
-	border-bottom: 1px solid #540000;
+	border-bottom: 0px solid #540000;
 }
 #tittxt {
 	width: 500px;
@@ -129,7 +129,7 @@ h1 {
 #qfield {
   border: 5px solid white; 
   width: 950px;
-  border: solid 1px #999;
+  border: solid 0px #999;
 
   height: 40px;
   font-size: 22px;
@@ -194,7 +194,10 @@ h1 {
 }
 
 #userinfo a {
-	border: 1px solid white;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+	border: 0px solid white;
 	padding: 5px;
 }
 #titdiv a:link{ text-decoration: none; color: #FFF;}
