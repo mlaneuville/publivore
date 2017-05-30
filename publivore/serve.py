@@ -123,9 +123,14 @@ def search():
     '''TODO'''
     keywords = request.args.get('q', '')
     keywords = keywords.split(',')
+    print(keywords)
 
     world = search_query(DATABASE, 'world', keywords=keywords)
-    return render_template("show_entries.html", entries=world)
+    dates = []
+    for row in world:
+        if row[5] not in dates:
+            dates.append(row[5])
+    return render_template("show_entries.html", entries={'data':world, 'dates':dates})
 
 @APP.route("/add_likes")
 def add_likes():
@@ -257,7 +262,7 @@ def logout():
 if __name__ == "__main__":
     APP.secret_key = 'super secret key'
 
-    if True:
+    if False:
         print('starting tornado!')
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer
