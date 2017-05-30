@@ -256,4 +256,17 @@ def logout():
 
 if __name__ == "__main__":
     APP.secret_key = 'super secret key'
-    APP.run()
+
+    if True:
+        print('starting tornado!')
+        from tornado.wsgi import WSGIContainer
+        from tornado.httpserver import HTTPServer
+        from tornado.ioloop import IOLoop
+        from tornado.log import enable_pretty_logging
+        enable_pretty_logging()
+        http_server = HTTPServer(WSGIContainer(APP))
+        http_server.listen(80)
+        IOLoop.instance().start()
+    else:
+        print('starting flask!')
+        APP.run()
