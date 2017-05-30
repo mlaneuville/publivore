@@ -154,14 +154,22 @@ def show_liked():
     likes = search_query(DATABASE, 'library', user=userid)
     arr_likes = [world[x[0]-1] for x in likes]
     arr_likes = sorted(arr_likes, key=lambda k: k[5], reverse=True)
-    return render_template("show_entries.html", entries=arr_likes)
+    dates = []
+    for row in arr_likes:
+        if row[5] not in dates:
+            dates.append(row[5])
+    return render_template("show_entries.html", entries={'data':arr_likes, 'dates':dates})
 
 @APP.route("/show_all")
 def show_all():
     '''TODO'''
     world = search_query(DATABASE, 'world')
     world = sorted(world, key=lambda k:k[0], reverse=True)
-    return render_template("show_entries.html", entries=world)
+    dates = []
+    for row in world:
+        if row[5] not in dates:
+            dates.append(row[5])
+    return render_template("show_entries.html", entries={'data':world, 'dates':dates})
 
 def get_user_id(username):
   """Convenience method to look up the id for a username."""

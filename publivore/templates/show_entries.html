@@ -4,8 +4,11 @@
 <h1>Entries</h1>
 <br/>
 
-{% for entry in entries %}
-<li><a href="{{ url_for('.add_likes', idx=entry[0])  }}">Swap</a> [{{entry[0]}}] {{entry[1]}}</li>
+{% for timestamp in entries.dates %}
+    <h3>{{ timestamp }}</h3>
+    {% for entry in entries.data if entry[5] == timestamp %}
+    <li><a href="{{ url_for('.add_likes', idx=entry[0])  }}">Swap</a> [{{entry[0]}}] {{entry[1]}}</li>
+    {% endfor %}
 {% endfor %}
 
 {% endblock %}
