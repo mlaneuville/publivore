@@ -18,7 +18,7 @@ create table world (
   paper_id integer primary key,
   title text not null,
   journal text not null,
-  volume integer not null,
-  issue integer not null,
+  volume integer default -1,
+  issue integer default -1,
   timestamp date default (date('now'))
 );
