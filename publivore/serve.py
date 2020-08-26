@@ -204,9 +204,9 @@ def get_user_id(username):
 
 def read_settings(userid):
     '''TODO'''
-    out = search_query(DATABASE, "users", user=userid)
-    session['ncomms'] = out[0][4]
-    session['nclusters'] = out[0][5]
+    out = search_query("users", user=userid)
+    session['ncomms'] = out[0][3]
+    session['nclusters'] = out[0][4]
     return
 
 @APP.route("/update_settings", methods=['POST'])
