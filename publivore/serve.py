@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 from sklearn import svm
 from flask import Flask, request, redirect, url_for, \
      render_template, flash, session, g
-from werkzeug import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from tools import *
 from retrieve import *
