@@ -2,6 +2,7 @@
 TODO
 '''
 
+import argparse
 from datetime import date
 import random
 import time
@@ -267,8 +268,12 @@ def logout():
 
 if __name__ == "__main__":
     APP.secret_key = 'super secret key'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--prod', dest='prod', action='store_true', help='run in prod?')
+    parser.add_argument('--port', dest='port', type=int, default=5000, help='port to serve on')
+    args = parser.parse_args()
 
-    if False:
+    if args.prod:
         print('starting tornado!')
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer
@@ -276,7 +281,7 @@ if __name__ == "__main__":
         from tornado.log import enable_pretty_logging
         enable_pretty_logging()
         http_server = HTTPServer(WSGIContainer(APP))
-        http_server.listen(80)
+        http_server.listen(args.port)
         IOLoop.instance().start()
     else:
         print('starting flask!')

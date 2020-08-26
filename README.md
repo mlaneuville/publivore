@@ -21,11 +21,20 @@ Webapp
 ------
 
 Only `retrieve.py` has to be done through command line, the rest can be done
-through the webapp. To start it
+through the webapp. But first, you need to create the database if it doesn't
+exist:
 
-$ python publivore/serve.py
+$ sqlite3 as.db < schema.sql
 
-And access it at http://127.0.0.1:5000
+Then to start the app:
+
+$ python3 publivore/serve.py
+
+You can then access it at http://127.0.0.1:5000
+
+For production mode:
+
+$ python3 publivore/serve.py --prod --port 5000
 
 Multiple keywords in the search fields have to be single words separated by a
 comma. A timestamp 'date:YYYY-MM-DD' can also be provided.
