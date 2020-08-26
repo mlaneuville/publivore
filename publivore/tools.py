@@ -4,17 +4,13 @@ TODO
 
 from sqlite3 import dbapi2 as sqlite3
 
-def connect_db():
+def query_db(query, args=(), one=False):
     '''TODO'''
-    sqlite_db = sqlite3.connect("as.db")
-    sqlite_db.row_factory = sqlite3.Row
-    return sqlite_db
-
-def query_db(_db, _query, args=(), one=False):
-    '''TODO'''
-    cur = _db.execute(_query, args)
-    res = cur.fetchall()
-    return (res[0] if res else None) if one else res
+    with sqlite3.connect("as.db") as db:
+        db.row_factory = sqlite3.Row
+        cur = db.execute(query, args)
+        res = cur.fetchall()
+        return (res[0] if res else None) if one else res
 
 def format_entry(entry):
     '''TODO'''
@@ -25,7 +21,7 @@ def format_entry(entry):
         res.append(col)
     return tuple(res)
 
-def search_query(db, table, keywords=None, journal=None, timestamp=None, user=None):
+def search_query(table, keywords=None, journal=None, timestamp=None, user=None):
     '''TODO'''
     if keywords:
         for kw in keywords:
@@ -46,7 +42,7 @@ def search_query(db, table, keywords=None, journal=None, timestamp=None, user=No
             query += " WHERE"
         query += " timestamp>='%s'" % timestamp
 
-    ret = query_db(db, query)
+    ret = query_db(query)
 
     pop, out = [], []
     for idx, item in enumerate(ret):

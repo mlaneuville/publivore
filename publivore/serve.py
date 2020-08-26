@@ -18,7 +18,6 @@ from tools import *
 from retrieve import *
 
 APP = Flask(__name__)
-DATABASE = connect_db()
 
 @APP.route("/")
 def main():
@@ -28,7 +27,7 @@ def main():
 @APP.route("/update")
 def update():
     '''TODO'''
-    today = search_query(DATABASE, 'world', timestamp=date.today().isoformat())
+    today = search_query('world', timestamp=date.today().isoformat())
 
     if len(today) > 0:
         flash("Already updated today!")
@@ -49,7 +48,7 @@ def analysis():
         flash("Please log in to see analysis.")
         return render_template("analysis.html")
         
-    size = query_db(DATABASE, "select * from world order by paper_id", one=False)
+    size = query_db("select * from world order by paper_id", one=False)
     corpus = []
     for item in size:
         corpus.append(item[1])
@@ -57,7 +56,7 @@ def analysis():
     nclusters = session["nclusters"]
     recomms = session["ncomms"]
 
-    size = search_query(DATABASE, "library", user=session['user_id'])
+    size = search_query("library", user=session['user_id'])
     if len(size) < nclusters:
         flash("Please like at least %d papers before trying the analysis." % recomms)
         return render_template("analysis.html")
@@ -113,7 +112,7 @@ def analysis():
 
     data['recomm'] = []
     for idx in sortix:
-        article = query_db(DATABASE, "select * from world where paper_id=%d"% (idx+1))[0]
+        article = query_db("select * from world where paper_id=%d"% (idx+1))[0]
         data['recomm'].append(format_entry(article))
 
     return render_template("analysis.html", data=data)
@@ -125,7 +124,7 @@ def search():
     keywords = keywords.split(',')
     print(keywords)
 
-    world = search_query(DATABASE, 'world', keywords=keywords)
+    world = search_query('world', keywords=keywords)
     dates = []
     for row in world:
         if row[5] not in dates:
@@ -140,26 +139,28 @@ def add_likes():
         return redirect(url_for('show_all'))
 
     idx = request.args.get('idx', type=int)
-    like = query_db(DATABASE, "select * from library where paper_id=%d"%idx, one=True)
-    if like:
-        q = '''DELETE FROM library where paper_id=?'''
-        DATABASE.execute(q, (idx,))
-    else:
-        q = '''INSERT INTO library VALUES (?,?,?)'''
-        DATABASE.execute(q, (idx, session['user_id'], date.today().isoformat()))
-    DATABASE.commit()
-    return redirect(url_for('show_all'))
+    like = query_db("select * from library where paper_id=%d"%idx, one=True)
+    with sqlite3.connect("as.db") as db:
+        db.row_factory = sqlite3.Row
+        if like:
+            q = '''DELETE FROM library where paper_id=?'''
+            db.execute(q, (idx,))
+        else:
+            q = '''INSERT INTO library VALUES (?,?,?)'''
+            db.execute(q, (idx, session['user_id'], date.today().isoformat()))
+        db.commit()
+        return redirect(url_for('show_all'))
 
 @APP.route("/show_liked")
 def show_liked():
     '''TODO'''
-    world = search_query(DATABASE, 'world')
+    world = search_query('world')
     userid = "-1"
     if 'user_id' in session.keys():
         userid = session['user_id'] 
     else:
         flash("Please log in to store likes.")
-    likes = search_query(DATABASE, 'library', user=userid)
+    likes = search_query('library', user=userid)
     arr_likes = [world[x[0]-1] for x in likes]
     arr_likes = sorted(arr_likes, key=lambda k: k[5], reverse=True)
     dates = []
@@ -188,7 +189,7 @@ def settings():
 @APP.route("/show_all")
 def show_all():
     '''TODO'''
-    world = search_query(DATABASE, 'world')
+    world = search_query('world')
     world = sorted(world, key=lambda k:k[0], reverse=True)
     dates = []
     for row in world:
@@ -198,7 +199,7 @@ def show_all():
 
 def get_user_id(username):
   """Convenience method to look up the id for a username."""
-  rv = query_db(DATABASE, 'select user_id from users where username = ?', [username], one=True)
+  rv = query_db('select user_id from users where username = ?', [username], one=True)
   return rv[0] if rv else None
 
 def read_settings(userid):
@@ -213,9 +214,12 @@ def update_settings():
     flash("Ok. %s = %s" % (request.form['vname'], request.form['vval']))
     query = "UPDATE users SET '%s'=%d WHERE user_id=%d" % (request.form['vname'], 
             int(request.form['vval']), int(session['user_id']))
-    DATABASE.execute(query)
-    read_settings(session['user_id'])
-    return redirect(url_for('show_all'))
+
+    with sqlite3.connect("as.db") as db:
+        db.row_factory = sqlite3.Row
+        db.execute(query)
+        read_settings(session['user_id'])
+        return redirect(url_for('show_all'))
 
 @APP.route("/login", methods=['POST'])
 def login():
@@ -224,7 +228,7 @@ def login():
     elif not request.form['password']:
         flash("You have to enter your password")
     elif get_user_id(request.form['username']) is not None:
-        user = query_db(DATABASE,'''select * from users where username = ?''', [request.form['username']], one=True)
+        user = query_db('''select * from users where username = ?''', [request.form['username']], one=True)
         if check_password_hash(user['pw_hash'], request.form['password']):
             # password is correct, log in the user
             session['user_id'] = get_user_id(request.form['username'])
@@ -238,12 +242,14 @@ def login():
         # create account and log in
         creation_time = int(time.time())
         print(type(request.form['username']), type(generate_password_hash(request.form['password'])), creation_time)
-        DATABASE.execute("insert into users (username, pw_hash, creation_time) values (?,?,?)",
+        with sqlite3.connect("as.db") as db:
+            db.row_factory = sqlite3.Row
+            db.execute("insert into users (username, pw_hash, creation_time) values (?,?,?)",
                      (request.form['username'], 
                       generate_password_hash(request.form['password']), 
                       creation_time))
-        user_id = DATABASE.execute('select last_insert_rowid()').fetchall()[0][0]
-        DATABASE.commit()
+            user_id = db.execute('select last_insert_rowid()').fetchall()[0][0]
+            db.commit()
 
         session['user_id'] = user_id
         session['username'] = request.form['username']

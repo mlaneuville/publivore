@@ -10,8 +10,6 @@ import feedparser
 from rdflib import Graph, Namespace, URIRef
 from tools import *
 
-DATABASE = connect_db()
-
 CONFIG = configparser.RawConfigParser()
 CONFIG.read("publivore/main.cfg")
 
@@ -19,7 +17,7 @@ RSS = Namespace('http://purl.org/rss/1.0/')
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 PRISM = Namespace('http://prismstandard.org/namespaces/1.2/basic/')
 
-NUM = query_db(DATABASE, "select * from world")
+NUM = query_db("select * from world")
 print("Opening DB with %d entries" % len(NUM))
 
 def fetch_wiley():
@@ -38,11 +36,13 @@ def fetch_wiley():
         for article in articles:
             title = article[2].lower()
     
-            exist = query_db(DATABASE, "select * from world where title=?", (title,), one=True)
+            exist = query_db("select * from world where title=?", (title,), one=True)
             if not exist:
                 q = '''INSERT INTO world (title, journal, volume, issue) VALUES (?,?,?,?)'''
-                DATABASE.execute(q, (title, abbr, volume, number))
-                DATABASE.commit()
+                with sqlite3.connect("as.db") as db:
+                    db.row_factory = sqlite3.Row
+                    db.execute(q, (title, abbr, volume, number))
+                    db.commit()
                 counter += 1
     
         yield (abbr, counter)
@@ -79,11 +79,13 @@ def fetch_rss():
                 issue = article.prism_number
     
             title = article.title.lower()
-            exist = query_db(DATABASE, "select * from world where title=?", (title,), one=True)
+            exist = query_db("select * from world where title=?", (title,), one=True)
             if not exist:
                 q = '''INSERT INTO world (title, journal, volume, issue) VALUES (?,?,?,?)'''
-                DATABASE.execute(q, (title, abbr, volume, issue))
-                DATABASE.commit()
+                with sqlite3.connect("as.db") as db:
+                    db.row_factory = sqlite3.Row
+                    db.execute(q, (title, abbr, volume, issue))
+                    db.commit()
                 counter += 1
     
         yield (abbr, counter)
@@ -103,11 +105,13 @@ def fetch_arxiv():
             for e in parse.entries:
                 title = e.title.lower()
     
-                exist = query_db(DATABASE, "select * from world where title=?", (title,), one=True)
+                exist = query_db("select * from world where title=?", (title,), one=True)
                 if not exist:
                     q = '''INSERT INTO world (title, journal, volume, issue) VALUES (?,?,?,?)'''
-                    DATABASE.execute(q, (title, abbr, -1, -1))
-                    DATABASE.commit()
+                    with sqlite3.connect("as.db") as db:
+                        db.row_factory = sqlite3.Row
+                        db.execute(q, (title, abbr, -1, -1))
+                        db.commit()
                     counter += 1
     
         yield (abbr, counter)

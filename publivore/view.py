@@ -16,14 +16,15 @@ parser.add_argument('-j', '--journal', help="Choose keyword to investigate")
 parser.add_argument('-t', '--timestamp', help="Choose keyword to investigate")
 args = parser.parse_args()
 
-DATABASE = connect_db()
-
-world = search_query(DATABASE, 'world', keywords=args.keywords,
+with sqlite3.connect("as.db") as db:
+    db.row_factory = sqlite3.Row
+    world = search_query('world', keywords=args.keywords,
                                         journal=args.journal, 
                                         timestamp=args.timestamp)
 
+    lib = query_db("select * from library", one=False)
+
 liked = []
-lib = query_db(DATABASE, "select * from library", one=False)
 for paper in lib:
     liked.append(paper[0])
 
