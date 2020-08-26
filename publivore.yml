@@ -1,38 +1,45 @@
 name: publivore
 channels:
-- bioconda
-- defaults
+  - conda-forge
+  - defaults
 dependencies:
-- isodate=0.5.4=py36_0
-- rdflib=4.2.2=py36_0
-- click=6.7=py36_0
-- feedparser=5.2.1=py36_0
-- flask=0.12.2=py36_0
-- html5lib=0.999=py36_0
-- itsdangerous=0.24=py36_0
-- jinja2=2.9.6=py36_0
-- libgfortran=3.0.0=1
-- markupsafe=0.23=py36_2
-- mkl=2017.0.1=0
-- numpy=1.12.1=py36_0
-- openssl=1.0.2l=0
-- pandas=0.20.1=np112py36_0
-- pip=9.0.1=py36_1
-- pyparsing=2.1.4=py36_0
-- python=3.6.1=2
-- python-dateutil=2.6.0=py36_0
-- pytz=2017.2=py36_0
-- readline=6.2=2
-- scikit-learn=0.18.1=np112py36_1
-- scipy=0.19.0=np112py36_0
-- setuptools=27.2.0=py36_0
-- six=1.10.0=py36_0
-- sqlite=3.13.0=0
-- tk=8.5.18=0
-- tornado=4.5.1=py36_0
-- werkzeug=0.12.2=py36_0
-- wheel=0.29.0=py36_0
-- xz=5.2.2=1
-- zlib=1.2.8=3
-- pip:
-  - sparqlwrapper==1.8.0
+  - _libgcc_mutex=0.1=main
+  - brotlipy=0.7.0=py37h8f50634_1000
+  - ca-certificates=2020.7.22=0
+  - certifi=2020.6.20=py37_0
+  - cffi=1.14.2=py37he30daa8_0
+  - chardet=3.0.4=py37hc8dfbb8_1006
+  - cryptography=3.0=py37hb09aad4_0
+  - html5lib=1.1=pyh9f0ad1d_0
+  - idna=2.10=pyh9f0ad1d_0
+  - isodate=0.6.0=py_1
+  - keepalive=0.5=py_1
+  - ld_impl_linux-64=2.33.1=h53a641e_7
+  - libedit=3.1.20191231=h14c3975_1
+  - libffi=3.3=he6710b0_2
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - libstdcxx-ng=9.1.0=hdf63c60_0
+  - ncurses=6.2=he6710b0_1
+  - openssl=1.1.1g=h7b6447c_0
+  - pip=20.2.2=py37_0
+  - pycparser=2.20=pyh9f0ad1d_2
+  - pyopenssl=19.1.0=py_1
+  - pyparsing=2.4.7=pyh9f0ad1d_0
+  - pysocks=1.7.1=py37hc8dfbb8_1
+  - python=3.7.7=hcff3b4d_5
+  - python_abi=3.7=1_cp37m
+  - rdflib=5.0.0=py37hc8dfbb8_2
+  - readline=8.0=h7b6447c_0
+  - requests=2.24.0=pyh9f0ad1d_0
+  - setuptools=49.6.0=py37_0
+  - six=1.15.0=pyh9f0ad1d_0
+  - sparqlwrapper=1.8.5=py37hc8dfbb8_1003
+  - sqlite=3.33.0=h62c20be_0
+  - tk=8.6.10=hbc83047_0
+  - tornado=6.0.4=py37h7b6447c_1
+  - urllib3=1.25.10=py_0
+  - webencodings=0.5.1=py_1
+  - wheel=0.35.1=py_0
+  - xz=5.2.5=h7b6447c_0
+  - zlib=1.2.11=h7b6447c_3
+prefix: /home/mlaneuville/miniconda3/envs/publivore
